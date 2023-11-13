@@ -1,14 +1,10 @@
 package com.chatapp.taoka.Services.impl;
 
-import com.chatapp.taoka.Exception.EntityNotFoundException;
-import com.chatapp.taoka.Exception.UserNotFoundException;
-import com.chatapp.taoka.Model.Friends;
 import com.chatapp.taoka.Model.User;
+
 import com.chatapp.taoka.Repository.UserRepository;
 import com.chatapp.taoka.Services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +29,9 @@ public class UserServiceImpl implements UserService {
         };
     }
 
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -50,6 +48,9 @@ public class UserServiceImpl implements UserService {
         User newUser = findByEmail(newFriendEmail);
         List<User> friends = user.getFriends();
         friends.add(newUser);
+//      Friends HandShake Occurs
+        newUser.getFriends().add(user);
+        userRepository.save(newUser);
         return userRepository.save(user);
     }
 
@@ -66,7 +67,20 @@ public class UserServiceImpl implements UserService {
         return "The Email " + email+" Has been Verified";
     }
 
-    public String sendFriendRequest(String email) {
-        return "Hello";
+    public Authentication sendFriendRequest(String email) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User ownerUser = findByEmail(userDetails.getUsername());
+            User newFriend = findByEmail(email);
+//            newFriend.getFriendRequest().contains(ownerUser);
+            if (!newFriend.getFriendRequest().stream().anyMatch(friend -> friend.getId().equals(ownerUser.getId()))){
+                newFriend.getFriendRequest().add(ownerUser);
+                userRepository.save(newFriend);
+            };
+        }
+        return authentication;
     }
 }

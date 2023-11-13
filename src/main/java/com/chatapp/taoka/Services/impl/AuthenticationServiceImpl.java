@@ -35,9 +35,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail()).password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER).createdAt(LocalDateTime.now()).friends(new ArrayList<User>()).friendRequest(new ArrayList<User>()).build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
         var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponse.builder().token(jwt).build();
+        return JwtAuthenticationResponse.builder().token(jwt).user_id(savedUser.getId()).build();
     }
 
     @Override
@@ -47,7 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
         var jwt = jwtService.generateToken(user);
-        return JwtAuthenticationResponse.builder().token(jwt).build();
+        return JwtAuthenticationResponse.builder().token(jwt).user_id(user.getId()).build();
     }
 
     private void validateSignupRequest(SignupRequest request) {

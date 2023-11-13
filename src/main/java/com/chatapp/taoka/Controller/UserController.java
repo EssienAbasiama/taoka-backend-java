@@ -18,19 +18,127 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1")
+@RequestMapping("api/v1/users")
 public class UserController {
 
     public final UserServiceImpl userService;
-    @PostMapping("/getAllFriends")
-    public ResponseEntity<?> getFriends(@RequestBody Map<String,String> request) {
-        String email = request.get("email");
 
-        try {
-            User user = userService.findByEmail(email);
-            List<User> friends = userService.getAllFriend(user.getEmail());
-            return ResponseEntity.ok(friends);
-        } catch (UsernameNotFoundException ex) {
+    @GetMapping("/get-me")
+    public ResponseEntity<?> getProfile() {
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            // Retrieve user details if the authentication is not null and principal is UserDetails
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+                String email = userDetails.getUsername(); // Get username
+                if (email.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized, Login again");
+                }
+                User user = userService.findByEmail(email);
+                return ResponseEntity.ok(user);
+            }else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
+                        " EndPoint");
+            }
+        }
+        catch (UsernameNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Email Does not Exist");
+        }
+    }
+
+    @GetMapping("/getallusers")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+    @GetMapping("/get-friends")
+    public ResponseEntity<?> getFriends() {
+
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            // Retrieve user details if the authentication is not null and principal is UserDetails
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+                String email = userDetails.getUsername(); // Get username
+                if (email.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized, Login again");
+                }
+                User user = userService.findByEmail(email);
+                List<User> friends = user.getFriends();
+                return ResponseEntity.ok(friends);
+            }else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
+                        " EndPoint");
+            }
+        }
+        catch (UsernameNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Email Does not Exist");
+        }
+    }
+
+    @GetMapping("/get-requests")
+    public ResponseEntity<?> getAllFriendRequest() {
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            // Retrieve user details if the authentication is not null and principal is UserDetails
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+                String email = userDetails.getUsername(); // Get username
+                if (email.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized, Login again");
+                }
+                return ResponseEntity.ok(userService.getAllFriendRequest(email));
+            }else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
+                        " EndPoint");
+            }
+        }
+        catch (UsernameNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Email Does not Exist");
+        }
+
+
+
+
+
+    }
+
+    @GetMapping("/verifyEmail")
+    public ResponseEntity<?> verifyEmail(@RequestBody String email) {
+        return ResponseEntity.ok(userService.verifyEmail(email));
+    }
+
+    @GetMapping("/sendFriendRequest")
+    public ResponseEntity<?> sendFriendRequest() {
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            // Retrieve user details if the authentication is not null and principal is UserDetails
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+                String email = userDetails.getUsername(); // Get username
+                if (email.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized, Login again");
+                }
+
+                if(userService.sendFriendRequest(email) != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body("Friend " +
+                            "Request " +
+                            " Sent to "+ email);
+                } return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be Authorized to access this endPoint");
+
+            }else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
+                        " EndPoint");
+            }
+        }
+        catch (UsernameNotFoundException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Email Does not Exist");
         }
     }
@@ -62,34 +170,6 @@ public class UserController {
         }
         catch (UsernameNotFoundException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Email Does not Exist");
-        }
-    }
-
-    @GetMapping("/getAllFriendRequest")
-    public ResponseEntity<?> getAllFriendRequest(@RequestBody String email) {
-        return ResponseEntity.ok(userService.getAllFriendRequest(email));
-    }
-
-    @GetMapping("/verifyEmail")
-    public ResponseEntity<?> verifyEmail(@RequestBody String email) {
-        return ResponseEntity.ok(userService.verifyEmail(email));
-    }
-
-    @GetMapping("/sendFriendRequest")
-    public ResponseEntity<?> sendFriendRequest(@RequestBody Map<String,String> request) {
-        String email = request.get("email");
-        User newFriend = userService.findByEmail(email);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            User ownerUser = userService.findByEmail(userDetails.getUsername());
-            ownerUser.getFriends().add(newFriend);
-            newFriend.getFriendRequest().add(ownerUser);
-            return ResponseEntity.status(HttpStatus.OK).body("Friend Request Sent to " + newFriend);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
-                    " EndPoint");
         }
     }
 }

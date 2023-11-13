@@ -31,9 +31,9 @@ public class SecurityConfiguration {
                         request -> request
                                 .requestMatchers(
                                         "/api/v1/auth/**",
-                                        "/api/v1/getAllFriends"
+                                        "/api/v1/users/**"
                                         ).permitAll()
-                                .requestMatchers("/api/v1/acceptFriendRequest").authenticated()
+                                .requestMatchers("").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
