@@ -113,27 +113,27 @@ public class UserController {
         return ResponseEntity.ok(userService.verifyEmail(email));
     }
 
-    @GetMapping("/sendFriendRequest")
-    public ResponseEntity<?> sendFriendRequest() {
+    @GetMapping("/sendFriendRequest/{toEmail}")
+    public ResponseEntity<?> sendFriendRequest(@PathVariable String toEmail) {
         try{
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             // Retrieve user details if the authentication is not null and principal is UserDetails
             if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
                 String email = userDetails.getUsername(); // Get username
                 if (email.isEmpty()){
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized, Login again");
                 }
 
-                if(userService.sendFriendRequest(email) != null) {
+                if(userService.sendFriendRequest(email, toEmail) != null) {
                     return ResponseEntity.status(HttpStatus.OK).body("Friend " +
                             "Request " +
                             " Sent to "+ email);
                 } return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be Authorized to access this endPoint");
 
             }else {
+                System.out.println("You need to be logged In first");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
                         " EndPoint");
             }
@@ -143,12 +143,12 @@ public class UserController {
         }
     }
 
-    @PostMapping("/acceptFriendRequest")
-    public ResponseEntity<?> acceptFriendRequest(@RequestBody Map<String,String> request) {
+    @GetMapping("/acceptFriendRequest/{newFriendEmail}")
+    public ResponseEntity<?> acceptFriendRequest(@PathVariable String newFriendEmail) {
+        System.out.println("I want to Send Friend Request");
         try{
-            String newFriendEmail = request.get("newFriendEmail");
+//            String newFriendEmail = request.get("newFriendEmail");
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
             // Retrieve user details if the authentication is not null and principal is UserDetails
             if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();

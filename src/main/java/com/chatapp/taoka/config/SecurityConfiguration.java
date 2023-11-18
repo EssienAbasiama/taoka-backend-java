@@ -33,9 +33,10 @@ public class SecurityConfiguration {
                                         "/api/v1/auth/**",
                                         "/api/v1/users/**"
                                         ).permitAll()
-                                .requestMatchers("").authenticated()
+                                .requestMatchers("/api/v1/users/sendFriendRequest/**").authenticated()
                                 .anyRequest().authenticated()
                 )
+
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

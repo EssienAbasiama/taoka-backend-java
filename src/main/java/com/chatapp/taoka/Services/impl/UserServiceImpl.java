@@ -50,6 +50,7 @@ public class UserServiceImpl implements UserService {
         friends.add(newUser);
 //      Friends HandShake Occurs
         newUser.getFriends().add(user);
+        user.getFriendRequest().remove(newUser);
         userRepository.save(newUser);
         return userRepository.save(user);
     }
@@ -67,13 +68,10 @@ public class UserServiceImpl implements UserService {
         return "The Email " + email+" Has been Verified";
     }
 
-    public Authentication sendFriendRequest(String email) {
-
+    public Authentication sendFriendRequest(String accountOwnerEmail, String email) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            User ownerUser = findByEmail(userDetails.getUsername());
+            User ownerUser = findByEmail(accountOwnerEmail);
             User newFriend = findByEmail(email);
 //            newFriend.getFriendRequest().contains(ownerUser);
             if (!newFriend.getFriendRequest().stream().anyMatch(friend -> friend.getId().equals(ownerUser.getId()))){
@@ -83,4 +81,7 @@ public class UserServiceImpl implements UserService {
         }
         return authentication;
     }
+
+
+
 }
