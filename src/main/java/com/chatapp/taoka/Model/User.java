@@ -73,24 +73,20 @@ public class User implements UserDetails {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//    @Override
+//    public String toString() {
+//        return "User{" +
+//                "id='" + id + '\'' +
+//                ", firstName='" + firstName + '\'' +
+//                ", lastName='" + lastName + '\'' +
+//                ", password='" + password + '\'' +
+//                ", friends=" + friends +
+//                ", friendRequest=" + friendRequest +
+//                ", email='" + email + '\'' +
+//                ", role=" + role +
+//                ", verified=" + verified +
+//                ", verifiedAt=" + verifiedAt +
+//                ", createdAt=" + createdAt +
+//                '}';
+//    }
 }

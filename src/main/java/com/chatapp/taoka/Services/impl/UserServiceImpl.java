@@ -44,15 +44,17 @@ public class UserServiceImpl implements UserService {
 
 
     public User acceptFriendRequest(String accountOwnerEmail, String newFriendEmail){
-        User user = findByEmail(newFriendEmail);
+        User user = findByEmail(accountOwnerEmail);
         User newUser = findByEmail(newFriendEmail);
         List<User> friends = user.getFriends();
         friends.add(newUser);
 //      Friends HandShake Occurs
         newUser.getFriends().add(user);
-        user.getFriendRequest().remove(newUser);
-        userRepository.save(newUser);
-        return userRepository.save(user);
+        if(user.getFriendRequest().stream().toList().remove(newUser)) {
+            userRepository.save(newUser);
+            return userRepository.save(user);
+        }
+        return user;
     }
 
     @Override

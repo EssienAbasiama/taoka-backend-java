@@ -145,7 +145,7 @@ public class UserController {
 
     @GetMapping("/acceptFriendRequest/{newFriendEmail}")
     public ResponseEntity<?> acceptFriendRequest(@PathVariable String newFriendEmail) {
-        System.out.println("I want to Send Friend Request");
+        System.out.println("Accepting Friend Request Activated");
         try{
 //            String newFriendEmail = request.get("newFriendEmail");
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -160,8 +160,7 @@ public class UserController {
                 if (accountOwnerEmail.equals(newFriendEmail)) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User Can't add himself as Friend");
                 }
-
-                return ResponseEntity.ok(userService.acceptFriendRequest(accountOwnerEmail, newFriendEmail));
+                return ResponseEntity.status(HttpStatus.OK).body(userService.acceptFriendRequest(accountOwnerEmail, newFriendEmail));
 
             }else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You need to be LoggedIn before accessing this" +
@@ -172,4 +171,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Email Does not Exist");
         }
     }
+
+
 }
